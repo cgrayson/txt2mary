@@ -1,0 +1,4 @@
+{
+  "UsersFilename": "./fixtures/users_test.json",
+  "MicroBlogToken": "foo-bar-42"
+}
