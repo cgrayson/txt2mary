@@ -31,7 +31,7 @@ type TwilioPayload struct {
 	MediaUrl10 string
 }
 
-func loadConfig() Config {
+func LoadConfig() Config {
 	var config Config
 	filename := "config.json"
 	if TestMode {
@@ -51,7 +51,7 @@ func loadConfig() Config {
 }
 
 func loadPhoneFile() map[string]string {
-	config := loadConfig()
+	config := LoadConfig()
 	contents, err := os.ReadFile(config.UsersFilename)
 	if err != nil {
 		log.Fatal(err)
