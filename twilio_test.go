@@ -1,13 +1,17 @@
 package main
 
 import (
+	"encoding/json"
+	"log"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"testing"
 )
 
-var testUrl = "/2010-04-01/Accounts/id1/Messages/id2/Media/ME2fe37blahblah"
+const testUrl = "/2010-04-01/Accounts/AC123/Messages/MM0123/Media/ME2fe37blahblah"
+
+const testTwilioMsg = "{ \"ToCountry\": \"US\", \"MediaContentType0\": \"image/jpeg\", \"ToState\": \"AL\", \"SmsMessageSid\": \"MM0123\", \"NumMedia\": \"1\", \"ToCity\": \"\", \"FromZip\": \"78765\", \"SmsSid\": \"MM0123\", \"FromState\": \"TX\", \"SmsStatus\": \"received\", \"FromCity\": \"AUSTIN\", \"Body\": \"Here is another pic\", \"FromCountry\": \"US\", \"To\": \"+12055551212\", \"ToZip\": \"\", \"NumSegments\": \"1\", \"MessageSid\": \"MM0123\", \"AccountSid\": \"AC123\", \"From\": \"+15125551212\", \"MediaUrl0\": \"https://api.twilio.com/2010-04-01/Accounts/AC123/Messages/MM0123/Media/ME456\", \"ApiVersion\": \"2010-04-01\" }"
 
 func TestGetTwilio(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -26,5 +30,45 @@ func TestGetTwilio(t *testing.T) {
 		if err := os.Remove(filename); err != nil {
 			t.Fatal("error removing file: " + filename)
 		}
+	}
+}
+
+// TestUnmarshalling was written more to make sure I understood unmarshalling than actual coverage
+func TestUnmarshalling(t *testing.T) {
+	testString := "{\"NumMedia\": \"2\", \"MediaUrl1\": \"https://url1.com\", \"MediaUrl9\": \"https://url9.com\"}"
+	var twilioPayload TwilioPayload
+
+	err := json.Unmarshal([]byte(testString), &twilioPayload)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if twilioPayload.NumMedia != "2" {
+		t.Errorf("expected 2 (got %q)", twilioPayload.NumMedia)
+	}
+	if twilioPayload.MediaUrl1 != "https://url1.com" {
+		t.Errorf("expected url1.com, not %q", twilioPayload.MediaUrl1)
+	}
+	if twilioPayload.MediaUrl9 != "https://url9.com" {
+		t.Errorf("expected url9.com, not %q", twilioPayload.MediaUrl1)
+	}
+}
+
+func TestParseTwilioWebhook(t *testing.T) {
+	TestMode = true
+	message := ParseTwilioWebhook(testTwilioMsg)
+
+	if message.From != "Dorothea" {
+		t.Errorf("expected Message.From of 'Dorothea', got %q", message.From)
+	}
+	if message.Text != "Here is another pic" {
+		t.Errorf("expected Message.Text of 'Here is another pic', got %q", message.Text)
+	}
+
+	if len(message.TwilioImageURLs) != 1 {
+		t.Errorf("expected 1 Message.TwilioImageURLs, got %d", len(message.TwilioImageURLs))
+	}
+	if message.TwilioImageURLs[0] != "https://api.twilio.com/2010-04-01/Accounts/AC123/Messages/MM0123/Media/ME456" {
+		t.Errorf("expected Message.TwilioImageURL to be set, got %q", message.TwilioImageURLs[0])
 	}
 }

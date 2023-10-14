@@ -1,8 +1,6 @@
 package main
 
 import (
-	"encoding/json"
-	"log"
 	"testing"
 )
 
@@ -45,26 +43,4 @@ func TestFormat(t *testing.T) {
 			t.Errorf("Format(%s, %s) != %q (%q)", test.msg, test.phoneNum, test.expectedMsg, actual)
 		}
 	}
-}
-
-// TestUnmarshalling is a test function written more to make sure I understood unmarshalling than actual coverage
-func TestUnmarshalling(t *testing.T) {
-	testString := "{\"NumMedia\": 2, \"MediaUrl1\": \"https://url1.com\", \"MediaUrl10\": \"https://url10.com\"}"
-	var twilioPayload TwilioPayload
-
-	err := json.Unmarshal([]byte(testString), &twilioPayload)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	if twilioPayload.NumMedia != 2 {
-		t.Errorf("expected 2 (got %d)", twilioPayload.NumMedia)
-	}
-	if twilioPayload.MediaUrl1 != "https://url1.com" {
-		t.Errorf("expected url1.com, not %q", twilioPayload.MediaUrl1)
-	}
-	if twilioPayload.MediaUrl10 != "https://url10.com" {
-		t.Errorf("expected url10.com, not %q", twilioPayload.MediaUrl1)
-	}
-	//fmt.Printf("and here we are, with: %q\n", twilioPayload)
 }

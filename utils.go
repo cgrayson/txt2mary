@@ -15,22 +15,6 @@ type Config struct {
 	MicroBlogToken string
 }
 
-type TwilioPayload struct {
-	From       string
-	Body       string // the message itself, may begin with "TEST:"
-	NumMedia   int
-	MediaUrl1  string
-	MediaUrl2  string
-	MediaUrl3  string
-	MediaUrl4  string
-	MediaUrl5  string
-	MediaUrl6  string
-	MediaUrl7  string
-	MediaUrl8  string
-	MediaUrl9  string
-	MediaUrl10 string
-}
-
 func LoadConfig() Config {
 	var config Config
 	filename := "config.json"
