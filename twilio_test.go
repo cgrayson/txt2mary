@@ -13,6 +13,12 @@ const testUrl = "/2010-04-01/Accounts/AC123/Messages/MM0123/Media/ME2fe37blahbla
 
 const testTwilioMsg = "{ \"ToCountry\": \"US\", \"MediaContentType0\": \"image/jpeg\", \"ToState\": \"AL\", \"SmsMessageSid\": \"MM0123\", \"NumMedia\": \"1\", \"ToCity\": \"\", \"FromZip\": \"78765\", \"SmsSid\": \"MM0123\", \"FromState\": \"TX\", \"SmsStatus\": \"received\", \"FromCity\": \"AUSTIN\", \"Body\": \"Here is another pic\", \"FromCountry\": \"US\", \"To\": \"+12055551212\", \"ToZip\": \"\", \"NumSegments\": \"1\", \"MessageSid\": \"MM0123\", \"AccountSid\": \"AC123\", \"From\": \"+15125551212\", \"MediaUrl0\": \"https://api.twilio.com/2010-04-01/Accounts/AC123/Messages/MM0123/Media/ME456\", \"ApiVersion\": \"2010-04-01\" }"
 
+func cleanupDownload(filename string) {
+	if err := os.Remove(filename); err != nil {
+		log.Fatal("error removing file: " + filename)
+	}
+}
+
 func TestGetTwilio(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != "GET" {
@@ -24,12 +30,10 @@ func TestGetTwilio(t *testing.T) {
 	defer server.Close()
 
 	filename, _ := GetTwilioImage(server.URL + testUrl)
+	defer cleanupDownload(filename)
+
 	if filename != "ME2fe37blahblah_temp.jpg" {
 		t.Errorf("Expected 'ME2fe37blahblah_temp.jpg', got %s", filename)
-	} else {
-		if err := os.Remove(filename); err != nil {
-			t.Fatal("error removing file: " + filename)
-		}
 	}
 }
 
@@ -65,10 +69,40 @@ func TestParseTwilioWebhook(t *testing.T) {
 		t.Errorf("expected Message.Text of 'Here is another pic', got %q", message.Text)
 	}
 
+	if message.NumImages != 1 {
+		t.Errorf("expected Message.NumImages of 1, got %d", message.NumImages)
+	}
 	if len(message.TwilioImageURLs) != 1 {
 		t.Errorf("expected 1 Message.TwilioImageURLs, got %d", len(message.TwilioImageURLs))
 	}
 	if message.TwilioImageURLs[0] != "https://api.twilio.com/2010-04-01/Accounts/AC123/Messages/MM0123/Media/ME456" {
 		t.Errorf("expected Message.TwilioImageURL to be set, got %q", message.TwilioImageURLs[0])
 	}
+}
+
+func TestDownloadTwilioImages(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte("\n")) // just return a newline to be saved in the temp file
+	}))
+	defer server.Close()
+
+	message := Message{
+		NumImages:       1,
+		TwilioImageURLs: []string{server.URL + "/2010-04-01/Accounts/AC123/Messages/MM0123/Media/ME456"},
+	}
+
+	err := DownloadTwilioImages(&message)
+	if err != nil {
+		t.Errorf("expected no error, got %q", err)
+	}
+
+	if len(message.ImageFilenames) != 1 {
+		t.Errorf("expected 1 ImageFilename, got %d", len(message.ImageFilenames))
+	}
+	if message.ImageFilenames[0] != "ME456_temp.jpg" {
+		t.Errorf("expected ImageFilename to be 'ME456_temp.jpg', got %q", message.ImageFilenames[0])
+	}
+
+	cleanupDownload(message.ImageFilenames[0])
 }

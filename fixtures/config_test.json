@@ -1,4 +1,8 @@
 {
   "UsersFilename": "./fixtures/users_test.json",
-  "MicroBlogToken": "foo-bar-42"
+  "MicroBlog": {
+    "Token": "foo-bar-42",
+    "Destination": "https://foo.micro.blog/",
+    "TestDestination": "https://foo-test.micro.blog/"
+  }
 }

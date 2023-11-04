@@ -10,9 +10,15 @@ import (
 // TestMode defaults to false but is set in the tests to load test config
 var TestMode = false
 
+type MicroBlogConfig struct {
+	Token           string
+	Destination     string
+	TestDestination string
+}
+
 type Config struct {
-	UsersFilename  string
-	MicroBlogToken string
+	UsersFilename string
+	MicroBlog     MicroBlogConfig
 }
 
 func LoadConfig() Config {

@@ -51,12 +51,12 @@ func ParseTwilioWebhook(payload string) Message {
 		Text: twilioPayload.Body,
 	}
 
-	numImages, err := strconv.Atoi(twilioPayload.NumMedia)
+	msg.NumImages, err = strconv.Atoi(twilioPayload.NumMedia)
 	if err != nil {
 		log.Printf("error converting NumMedia value from Twilio to int: %v", twilioPayload.NumMedia)
 	}
 
-	for i := 0; i < numImages; i++ {
+	for i := 0; i < msg.NumImages; i++ {
 		msg.TwilioImageURLs = append(msg.TwilioImageURLs, getMediaUrl(&twilioPayload, i))
 	}
 	return msg
@@ -91,4 +91,16 @@ func GetTwilioImage(url string) (string, error) {
 	}
 
 	return filename, nil
+}
+
+func DownloadTwilioImages(msg *Message) error {
+	for i := 0; i < msg.NumImages; i++ {
+		filename, err := GetTwilioImage(msg.TwilioImageURLs[i])
+		if err != nil {
+			log.Printf("error downloading %q", msg.TwilioImageURLs[i])
+			return err
+		}
+		msg.ImageFilenames = append(msg.ImageFilenames, filename)
+	}
+	return nil
 }

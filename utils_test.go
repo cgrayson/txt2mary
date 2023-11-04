@@ -4,6 +4,24 @@ import (
 	"testing"
 )
 
+func TestLoadConfig(t *testing.T) {
+	TestMode = true
+
+	config := LoadConfig()
+	if config.UsersFilename != "./fixtures/users_test.json" {
+		t.Errorf("Expected UsersFilename to be './fixtures/users_test.json', not %q", config.UsersFilename)
+	}
+	if config.MicroBlog.Token != "foo-bar-42" {
+		t.Errorf("Expected Token to be 'foo-bar-42', not %q", config.MicroBlog.Token)
+	}
+	if config.MicroBlog.Destination != "https://foo.micro.blog/" {
+		t.Errorf("Expected Destination to be 'https://foo.micro.blog/', not %q", config.MicroBlog.Destination)
+	}
+	if config.MicroBlog.TestDestination != "https://foo-test.micro.blog/" {
+		t.Errorf("Expected TestDestination to be 'https://foo-test.micro.blog/', not %q", config.MicroBlog.TestDestination)
+	}
+}
+
 func TestLookup(t *testing.T) {
 	TestMode = true
 

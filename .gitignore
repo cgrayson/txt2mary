@@ -1,2 +1,5 @@
+config.json
 users.json
 .idea
+.DS_Store
+txt2mary
