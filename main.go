@@ -1,7 +1,11 @@
 package main
 
 import (
+	"fmt"
+	"io"
+	"io/ioutil"
 	"log"
+	"net/http"
 )
 
 type Message struct {
@@ -15,22 +19,19 @@ type Message struct {
 }
 
 var config Config
-var TestTwilioMsg string
 
-func main() {
-	// load this at the start of each request
+func handler(w http.ResponseWriter, r *http.Request) {
+	// load at start of each request - not performant but easy to change config
 	config = LoadConfig()
 
-	/*
-		- listen for webhook post from Twilio
-		- parse webhook post from Twilio (-> create Message, with From, Text, & Twilio Image URLs)
-		- download any images to local temp files (-> add Image Filenames to Message)
-		- upload any images to Micro.blog (-> add MB Image URLs to Message)
-		- post actual message to Micro.blog (-> add MB Post URL to Message)
-		- upload images & post message to Twitter
-		- respond to Twilio
-	*/
-	message := ParseTwilioWebhook(TestTwilioMsg)
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		log.Printf("error reading request body: %q\n", err)
+	}
+
+	message := ParseTwilioWebhook(string(body))
+
+	// todo: handle unrecognized senders
 
 	if message.NumImages > 0 {
 		err := DownloadTwilioImages(&message)
@@ -44,8 +45,22 @@ func main() {
 		}
 	}
 
-	err := UploadMessageToMicroBlog(&message)
+	err = UploadMessageToMicroBlog(&message)
 	if err != nil {
 		log.Fatal("Error posting message to Micro.blog; exiting")
 	}
+
+	_, err = io.WriteString(w, Twiml(fmt.Sprintf("message posted to %s", message.MBPostURL)))
+	if err != nil {
+		log.Fatal("Error writing twiml response")
+	}
+
+	log.Printf("message posted from %s, with %d images: '%s'\n", message.From, message.NumImages, message.Text)
+}
+
+func main() {
+	// also todo: fix port
+	http.HandleFunc("/chipot-acquired", handler)
+	log.Fatal(http.ListenAndServe("localhost:8088", nil))
+
 }
