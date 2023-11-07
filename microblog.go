@@ -100,17 +100,16 @@ func postMessage(message *Message, mpDestination string) (string, error) {
 		return "", err
 	}
 
-	type microblogResponse struct {
-		url     string
-		preview string
+	var mbResponse struct {
+		Url     string
+		Preview string
 	}
-	mbResponse := microblogResponse{}
-	err = json.Unmarshal([]byte(body), &mbResponse)
+	err = json.Unmarshal(body, &mbResponse)
 	if err != nil {
 		return "", err
 	}
 
-	return mbResponse.url, nil
+	return mbResponse.Url, nil
 }
 
 // UploadImagesToMicroBlog uploads all the images in the given Message to Micro.blog,
