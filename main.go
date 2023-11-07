@@ -31,8 +31,16 @@ func handler(w http.ResponseWriter, r *http.Request) {
 
 	message := ParseTwilioWebhook(string(body))
 
-	// todo: handle unrecognized senders
+	// check for an unrecognized sender
+	if message.From == "" {
+		_, err = io.WriteString(w, Twiml("your number is not allowed to text here"))
+		if err != nil {
+			log.Fatal("Error writing twiml response")
+		}
+		return
+	}
 
+	// download & upload images, if there are any
 	if message.NumImages > 0 {
 		err := DownloadTwilioImages(&message)
 		if err != nil {
@@ -45,11 +53,13 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	// post the message to Micro.blog
 	err = UploadMessageToMicroBlog(&message)
 	if err != nil {
 		log.Fatal("Error posting message to Micro.blog; exiting")
 	}
 
+	// respond to Twilio
 	_, err = io.WriteString(w, Twiml(fmt.Sprintf("message posted to %s", message.MBPostURL)))
 	if err != nil {
 		log.Fatal("Error writing twiml response")
@@ -59,8 +69,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	// also todo: fix port
 	http.HandleFunc("/chipot-acquired", handler)
-	log.Fatal(http.ListenAndServe("localhost:8088", nil))
+	log.Fatal(http.ListenAndServe("localhost:3000", nil))
 
 }
