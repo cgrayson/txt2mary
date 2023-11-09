@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 )
 
 type Message struct {
@@ -21,9 +22,6 @@ type Message struct {
 var config Config
 
 func handler(w http.ResponseWriter, r *http.Request) {
-	// load at start of each request - not performant but easy to change config
-	config = LoadConfig()
-
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		log.Printf("error reading request body: %q\n", err)
@@ -65,11 +63,20 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		log.Fatal("Error writing twiml response")
 	}
 
-	log.Printf("message posted from %s, with %d images: '%s'\n", message.From, message.NumImages, message.Text)
+	log.Printf("message posted from %s, with %d images: %q\n", message.From, message.NumImages, message.Text)
 }
 
 func main() {
-	http.HandleFunc("/chipot-acquired", handler)
-	log.Fatal(http.ListenAndServe("localhost:3000", nil))
+	config = LoadConfig()
 
+	if config.Logfile != "stderr" && config.Logfile != "" {
+		file, err := os.OpenFile(config.Logfile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
+		if err != nil {
+			log.Fatalf("error creating logfile %q: %s", config.Logfile, err)
+		}
+		log.SetOutput(file)
+	}
+
+	http.HandleFunc(config.ServerRoute, handler)
+	log.Fatal(http.ListenAndServe(config.Server, nil))
 }

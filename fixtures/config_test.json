@@ -1,4 +1,7 @@
 {
+  "Logfile": "txt2mary.log",
+  "Server": "localhost:8088",
+  "ServerRoute": "/txt",
   "UsersFilename": "./fixtures/users_test.json",
   "MicroBlog": {
     "Token": "foo-bar-42",

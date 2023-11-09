@@ -17,6 +17,9 @@ type MicroBlogConfig struct {
 }
 
 type Config struct {
+	Logfile       string
+	Server        string
+	ServerRoute   string
 	UsersFilename string
 	MicroBlog     MicroBlogConfig
 }

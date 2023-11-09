@@ -43,7 +43,8 @@ func ParseTwilioWebhook(payload string) Message {
 
 	err := json.Unmarshal([]byte(payload), &twilioPayload)
 	if err != nil {
-		log.Fatal(err)
+		log.Printf("error unmarshalling payload %q: %v", payload, err)
+		return Message{}
 	}
 
 	msg := Message{
@@ -53,12 +54,14 @@ func ParseTwilioWebhook(payload string) Message {
 
 	msg.NumImages, err = strconv.Atoi(twilioPayload.NumMedia)
 	if err != nil {
-		log.Printf("error converting NumMedia value from Twilio to int: %v", twilioPayload.NumMedia)
+		log.Printf("error converting NumMedia value from Twilio to int: %q", twilioPayload.NumMedia)
 	}
 
 	for i := 0; i < msg.NumImages; i++ {
 		msg.TwilioImageURLs = append(msg.TwilioImageURLs, getMediaUrl(&twilioPayload, i))
 	}
+
+	log.Printf("received twilio post from %s, with %d images: %q", msg.From, msg.NumImages, msg.Text)
 	return msg
 }
 
