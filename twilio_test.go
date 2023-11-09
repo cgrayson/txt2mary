@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"os"
 	"testing"
 )
@@ -60,7 +61,12 @@ func TestUnmarshalling(t *testing.T) {
 
 func TestParseTwilioWebhook(t *testing.T) {
 	TestMode = true
-	message := ParseTwilioWebhook(testTwilioMsg)
+	data := url.Values{}
+	data.Set("From", "+15125551212")
+	data.Set("Body", "Here is another pic")
+	data.Set("NumMedia", "1")
+	data.Add("MediaUrl0", "https://api.twilio.com/2010-04-01/Accounts/AC123/Messages/MM0123/Media/ME456")
+	message := ParseTwilioWebhook(data)
 
 	if message.From != "Dorothea" {
 		t.Errorf("expected Message.From of 'Dorothea', got %q", message.From)

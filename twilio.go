@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -38,27 +37,23 @@ func getMediaUrl(payload *TwilioPayload, mediaUrlNumber int) string {
 
 // ParseTwilioWebhook parses webhook post from Twilio,
 // returning a Message populated with From, Text, & TwilioImageURLs
-func ParseTwilioWebhook(payload string) Message {
-	var twilioPayload TwilioPayload
-
-	err := json.Unmarshal([]byte(payload), &twilioPayload)
-	if err != nil {
-		log.Printf("error unmarshalling payload %q: %v", payload, err)
-		return Message{}
-	}
-
+func ParseTwilioWebhook(formData map[string][]string) Message {
 	msg := Message{
-		From: LookupPhone(twilioPayload.From),
-		Text: twilioPayload.Body,
+		From: LookupPhone(formData["From"][0]),
+		Text: formData["Body"][0],
 	}
 
-	msg.NumImages, err = strconv.Atoi(twilioPayload.NumMedia)
+	var err error
+	numMedia := formData["NumMedia"][0]
+	msg.NumImages, err = strconv.Atoi(numMedia)
 	if err != nil {
-		log.Printf("error converting NumMedia value from Twilio to int: %q", twilioPayload.NumMedia)
+		log.Printf("error converting NumMedia value from Twilio to int: %q", numMedia)
 	}
 
 	for i := 0; i < msg.NumImages; i++ {
-		msg.TwilioImageURLs = append(msg.TwilioImageURLs, getMediaUrl(&twilioPayload, i))
+		parameterName := fmt.Sprintf("MediaUrl%d", i)
+		mediaUrl := formData[parameterName][0]
+		msg.TwilioImageURLs = append(msg.TwilioImageURLs, mediaUrl)
 	}
 
 	log.Printf("received twilio post from %s, with %d images: %q", msg.From, msg.NumImages, msg.Text)

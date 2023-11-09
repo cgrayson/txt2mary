@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -22,12 +21,12 @@ type Message struct {
 var config Config
 
 func handler(w http.ResponseWriter, r *http.Request) {
-	body, err := ioutil.ReadAll(r.Body)
+	err := r.ParseForm()
 	if err != nil {
-		log.Printf("error reading request body: %q\n", err)
+		log.Printf("error reading parsing form data: %s\n", err)
 	}
 
-	message := ParseTwilioWebhook(string(body))
+	message := ParseTwilioWebhook(r.PostForm)
 
 	// check for an unrecognized sender
 	if message.From == "" {
