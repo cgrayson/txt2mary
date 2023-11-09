@@ -75,7 +75,7 @@ func uploadFile(filename string, mpDestination string) (string, error) {
 func postMessage(message *Message, mpDestination string) (string, error) {
 	data := url.Values{}
 	data.Set("h", "entry")
-	data.Set("content", message.Text)
+	data.Set("content", fmt.Sprintf("> %s\n\n&ndash; %s", message.Text, message.From))
 	data.Set("category", "txt")
 	for i := 0; i < message.NumImages; i++ {
 		data.Add("photo[]", message.MBImageURLs[i])

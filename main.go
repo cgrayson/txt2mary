@@ -67,6 +67,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	config = LoadConfig()
+	log.Printf("config loaded, listening on %s%s", config.Server, config.ServerRoute)
 
 	if config.Logfile != "stderr" && config.Logfile != "" {
 		file, err := os.OpenFile(config.Logfile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
