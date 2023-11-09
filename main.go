@@ -63,7 +63,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		log.Fatal("Error writing twiml response")
 	}
 
-	log.Printf("message posted from %s, with %d images: %q\n", message.From, message.NumImages, message.Text)
+	log.Printf("done processing message from %s, with %d images: %q\n", message.From, message.NumImages, message.Text)
 }
 
 func main() {

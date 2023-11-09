@@ -104,6 +104,7 @@ func DownloadTwilioImages(msg *Message) error {
 			return err
 		}
 		msg.ImageFilenames = append(msg.ImageFilenames, filename)
+		log.Printf("downloaded image %q from Twilio\n", filename)
 	}
 	return nil
 }

@@ -117,12 +117,14 @@ func postMessage(message *Message, mpDestination string) (string, error) {
 func UploadImagesToMicroBlog(message *Message) error {
 	// this will skip if no images
 	for i := 0; i < message.NumImages; i++ {
-		mbUrl, err := uploadFile(message.ImageFilenames[i], destinationBlog(message))
+		filename := message.ImageFilenames[i]
+		mbUrl, err := uploadFile(filename, destinationBlog(message))
 		if err != nil {
-			log.Printf("Error uploading file %q to blog %q", message.ImageFilenames[i], destinationBlog(message))
+			log.Printf("Error uploading file %q to blog %q", filename, destinationBlog(message))
 			return err
 		}
 		message.MBImageURLs = append(message.MBImageURLs, mbUrl)
+		log.Printf("uploaded image %q to Micro.blog\n", filename)
 	}
 	return nil
 }
@@ -136,5 +138,6 @@ func UploadMessageToMicroBlog(message *Message) error {
 		log.Printf("Error posting message %q to blog %q: %s", message.Text, destinationBlog(message), err)
 		return err
 	}
+	log.Printf("posted message to Micro.blog\n")
 	return nil
 }
