@@ -40,27 +40,33 @@ func LoadConfig() Config {
 		log.Fatal(err)
 	}
 
+	// ensure the configured users file is present
+	_, err = os.Stat(config.UsersFilename)
+	if err != nil {
+		log.Fatalf("error checking users file: %s\n", err)
+	}
+
 	return config
 }
 
-func loadPhoneFile() map[string]string {
+func loadUsersFile() map[string]string {
 	config := LoadConfig()
 	contents, err := os.ReadFile(config.UsersFilename)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("error loading users file %q: %s\n", config.UsersFilename, err)
 	}
 
 	var phoneMap map[string]string
 	err = json.Unmarshal(contents, &phoneMap)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("error parsing phone file %q: %s\n", config.UsersFilename, err)
 	}
 
 	return phoneMap
 }
 
 func LookupPhone(phone string) string {
-	phoneMap := loadPhoneFile()
+	phoneMap := loadUsersFile()
 	return phoneMap[phone]
 }
 
