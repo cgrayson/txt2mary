@@ -125,6 +125,13 @@ func UploadImagesToMicroBlog(message *Message) error {
 		}
 		message.MBImageURLs = append(message.MBImageURLs, mbUrl)
 		log.Printf("uploaded image %q to Micro.blog\n", filename)
+
+		err = os.Remove(filename)
+		if err != nil {
+			log.Printf("Error removing file %q: %s\n", filename, err)
+		} else {
+			log.Printf("removed file %q\n", filename)
+		}
 	}
 	return nil
 }
