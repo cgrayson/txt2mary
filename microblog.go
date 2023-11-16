@@ -31,6 +31,7 @@ func newMbRequest(mpDestination string, media bool, body io.Reader) (*http.Reque
 	mbUrl += "?mp-destination=" + url.QueryEscape(mpDestination)
 	request, err := http.NewRequest(http.MethodPost, mbUrl, body)
 	if err != nil {
+		log.Printf("error creating Micro.blog request: %s", err)
 		return &http.Request{}, err
 	}
 	request.Header.Add("Authorization", "Bearer "+config.MicroBlog.Token)
@@ -43,6 +44,7 @@ func newMbRequest(mpDestination string, media bool, body io.Reader) (*http.Reque
 func uploadFile(filename string, mpDestination string) (string, error) {
 	file, err := os.Open(filename)
 	if err != nil {
+		log.Printf("error opening file %q: %s", filename, err)
 		return "", err
 	}
 
@@ -52,6 +54,7 @@ func uploadFile(filename string, mpDestination string) (string, error) {
 
 	_, err = io.Copy(fw, file)
 	if err != nil {
+		log.Printf("error io-copying file %q: %s", filename, err)
 		return "", err
 	}
 	_ = writer.Close()
@@ -65,6 +68,7 @@ func uploadFile(filename string, mpDestination string) (string, error) {
 	client := &http.Client{}
 	resp, err := client.Do(request)
 	if err != nil {
+		log.Printf("error posting file %q to Micro.blog: %s", filename, err)
 		return "", err
 	}
 
@@ -89,14 +93,16 @@ func postMessage(message *Message, mpDestination string) (string, error) {
 	client := &http.Client{}
 	resp, err := client.Do(request)
 	if err != nil {
+		log.Printf("error posting to Micro.blog: %s", err)
 		return "", err
 	}
 	if resp.StatusCode > 202 {
-		return "", errors.New(fmt.Sprintf("got a %d posting the message to Micro.blog", resp.StatusCode))
+		return "", errors.New(fmt.Sprintf("got status code %d posting the message to Micro.blog", resp.StatusCode))
 	}
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
+		log.Printf("error reading response from Micro.blog: %s", err)
 		return "", err
 	}
 
@@ -106,43 +112,29 @@ func postMessage(message *Message, mpDestination string) (string, error) {
 	}
 	err = json.Unmarshal(body, &mbResponse)
 	if err != nil {
+		log.Printf("error unmarshalling response from Micro.blog: %s", err)
 		return "", err
 	}
 
 	return mbResponse.Url, nil
 }
 
-// UploadImagesToMicroBlog uploads all the images in the given Message to Micro.blog,
-// updating the Message with MBImageURLs.
-func UploadImagesToMicroBlog(message *Message) error {
-	// this will skip if no images
-	for i := 0; i < message.NumImages; i++ {
-		filename := message.ImageFilenames[i]
+// UploadMessageToMicroBlog sends the text, including uploading any image in the given
+// Message to Micro.Blog, updating the MBPostURL with the resultant post.
+func UploadMessageToMicroBlog(message *Message) error {
+	var err error
+
+	for _, filename := range message.ImageFilenames {
 		mbUrl, err := uploadFile(filename, destinationBlog(message))
 		if err != nil {
-			log.Printf("Error uploading file %q to blog %q", filename, destinationBlog(message))
 			return err
 		}
 		message.MBImageURLs = append(message.MBImageURLs, mbUrl)
 		log.Printf("uploaded image %q to Micro.blog\n", filename)
-
-		err = os.Remove(filename)
-		if err != nil {
-			log.Printf("Error removing file %q: %s\n", filename, err)
-		} else {
-			log.Printf("removed file %q\n", filename)
-		}
 	}
-	return nil
-}
 
-// UploadMessageToMicroBlog sends the text, including any image URLs in the given
-// Message to Micro.Blog, updating the MBPostURL with the resultant post.
-func UploadMessageToMicroBlog(message *Message) error {
-	var err error
 	message.MBPostURL, err = postMessage(message, destinationBlog(message))
 	if err != nil {
-		log.Printf("Error posting message %q to blog %q: %s", message.Text, destinationBlog(message), err)
 		return err
 	}
 	log.Printf("posted message to Micro.blog\n")

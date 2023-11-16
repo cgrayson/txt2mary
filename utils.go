@@ -16,12 +16,20 @@ type MicroBlogConfig struct {
 	TestDestination string
 }
 
+type TwitterConfig struct {
+	ConsumerKey       string
+	ConsumerSecret    string
+	AccessToken       string
+	AccessTokenSecret string
+}
+
 type Config struct {
 	Logfile       string
 	Server        string
 	ServerRoute   string
 	UsersFilename string
 	MicroBlog     MicroBlogConfig
+	Twitter       TwitterConfig
 }
 
 func LoadConfig() Config {

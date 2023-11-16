@@ -7,5 +7,11 @@
     "Token": "foo-bar-42",
     "Destination": "https://foo.micro.blog/",
     "TestDestination": "https://foo-test.micro.blog/"
+  },
+  "Twitter": {
+    "ConsumerKey": "key123",
+    "ConsumerSecret": "secret456",
+    "AccessToken": "token789",
+    "AccessTokenSecret": "secretabc"
   }
 }

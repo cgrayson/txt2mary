@@ -20,6 +20,9 @@ func TestLoadConfig(t *testing.T) {
 	if config.MicroBlog.TestDestination != "https://foo-test.micro.blog/" {
 		t.Errorf("Expected TestDestination to be 'https://foo-test.micro.blog/', not %q", config.MicroBlog.TestDestination)
 	}
+	if config.Twitter == (TwitterConfig{}) {
+		t.Errorf("Expected TwitterConfig to be populated")
+	}
 }
 
 func TestLookup(t *testing.T) {
