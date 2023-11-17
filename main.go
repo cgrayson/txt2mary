@@ -22,6 +22,39 @@ type Message struct {
 
 var config Config
 
+func post(message *Message) {
+	// download images, if there are any
+	if message.NumImages > 0 {
+		err := DownloadTwilioImages(message)
+		if err != nil {
+			log.Printf("error downloading from Twilio; exiting")
+			return
+		}
+	}
+
+	// post the message to Micro.blog, if it's configured
+	if config.MicroBlog != (MicroBlogConfig{}) {
+		err := UploadMessageToMicroBlog(message)
+		if err != nil {
+			log.Printf("error posting message to Micro.blog; exiting")
+			return
+		}
+	} else {
+		log.Printf("no configuration for Micro.blog - skipping")
+	}
+
+	// post the message to Twitter, if it's configured
+	if config.Twitter != (TwitterConfig{}) {
+		err := UploadMessageToTwitter(message)
+		if err != nil {
+			log.Printf("error posting message to Twitter; exiting")
+			return
+		}
+	} else {
+		log.Printf("no configuration for Twitter - skipping")
+	}
+}
+
 func handler(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseForm()
 	if err != nil {
@@ -32,45 +65,20 @@ func handler(w http.ResponseWriter, r *http.Request) {
 
 	// check for an unrecognized sender
 	if message.From == "" {
+		log.Printf("message from unrecognized number; returning")
 		_, err = io.WriteString(w, Twiml("your number is not allowed to text here"))
 		if err != nil {
-			log.Fatal("Error writing twiml response")
+			log.Printf("error writing twiml response")
 		}
 		return
 	}
 
-	// download images, if there are any
-	if message.NumImages > 0 {
-		err := DownloadTwilioImages(&message)
-		if err != nil {
-			log.Fatal("Error downloading from Twilio; exiting")
-		}
-	}
+	post(&message)
 
-	// post the message to Micro.blog, if it's configured
-	if config.MicroBlog != (MicroBlogConfig{}) {
-		err = UploadMessageToMicroBlog(&message)
-		if err != nil {
-			log.Fatal("Error posting message to Micro.blog; exiting")
-		}
-	} else {
-		log.Printf("no configuration for Micro.blog - skipping")
-	}
-
-	// post the message to Twitter, if it's configured
-	if config.Twitter != (TwitterConfig{}) {
-		err = UploadMessageToTwitter(&message)
-		if err != nil {
-			log.Fatal("Error posting message to Twitter; exiting")
-		}
-	} else {
-		log.Printf("no configuration for Twitter - skipping")
-	}
-
-	// respond to Twilio
+	// always respond to Twilio (with rose-tinted message)
 	_, err = io.WriteString(w, Twiml(fmt.Sprintf("message posted %s", message.MBPostURL)))
 	if err != nil {
-		log.Fatal("Error writing twiml response")
+		log.Printf("error writing twiml response")
 	}
 
 	// todo: add back in file removal
