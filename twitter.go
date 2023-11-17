@@ -92,6 +92,8 @@ func uploadImageToTwitter(filename string) (string, error) {
 }
 
 func postMessageToTwitter(message *Message) (string, error) {
+	// this library also needs the API key & secret set in environment
+	// variables $GOTWI_API_KEY & $GOTWI_API_KEY_SECRET
 	in := &gotwi.NewClientInput{
 		AuthenticationMethod: gotwi.AuthenMethodOAuth1UserContext,
 		OAuthToken:           config.Twitter.AccessToken,
@@ -116,7 +118,7 @@ func postMessageToTwitter(message *Message) (string, error) {
 
 	res, err := managetweet.Create(context.Background(), client, input)
 	if err != nil {
-		log.Printf("error posting to Twitter (v2): %s", err)
+		log.Printf("error posting this input %v to Twitter (v2): %s", input, err)
 		return "", err
 	}
 
