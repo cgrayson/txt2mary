@@ -120,10 +120,10 @@ func postMessageToTwitter(message *Message) (string, error) {
 
 	var tweetId string
 	for numTries := 0; numTries < maxRetries; numTries++ {
-		log.Printf("try #%d: posting to Twitter (v2): Text: %q & MediaIDs: %v", numTries, *input.Text, input.Media.MediaIDs)
+		log.Printf("try #%d: posting to Twitter (v2): Text: %q & MediaIDs: %v", numTries, *input.Text, message.TwitterMediaIds)
 		res, err := managetweet.Create(context.Background(), client, input)
 		if err != nil {
-			log.Printf("error posting to Twitter (v2): Text: %q & MediaIDs: %v: %s", *input.Text, input.Media.MediaIDs, err)
+			log.Printf("error posting to Twitter (v2): Text: %q & MediaIDs: %v: %s", *input.Text, message.TwitterMediaIds, err)
 		} else {
 			tweetId = gotwi.StringValue(res.Data.Text)
 			break
