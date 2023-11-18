@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"github.com/kurrik/oauth1a"
 	"github.com/kurrik/twittergo"
@@ -92,6 +93,7 @@ func uploadImageToTwitter(filename string) (string, error) {
 }
 
 func postMessageToTwitter(message *Message) (string, error) {
+	const maxRetries = 5
 	// this library also needs the API key & secret set in environment
 	// variables $GOTWI_API_KEY & $GOTWI_API_KEY_SECRET
 	in := &gotwi.NewClientInput{
@@ -116,13 +118,23 @@ func postMessageToTwitter(message *Message) (string, error) {
 		}
 	}
 
-	res, err := managetweet.Create(context.Background(), client, input)
-	if err != nil {
-		log.Printf("error posting this input %v to Twitter (v2): %s", input, err)
-		return "", err
+	var tweetId string
+	for numTries := 0; numTries < maxRetries; numTries++ {
+		log.Printf("try #%d: posting to Twitter (v2): Text: %q & MediaIDs: %v", numTries, *input.Text, input.Media.MediaIDs)
+		res, err := managetweet.Create(context.Background(), client, input)
+		if err != nil {
+			log.Printf("error posting to Twitter (v2): Text: %q & MediaIDs: %v: %s", *input.Text, input.Media.MediaIDs, err)
+		} else {
+			tweetId = gotwi.StringValue(res.Data.Text)
+			break
+		}
 	}
 
-	return gotwi.StringValue(res.Data.Text), nil
+	if tweetId == "" {
+		return "", errors.New(fmt.Sprintf("unable to post to Twitter (v2) after %d tries\n", maxRetries))
+	}
+
+	return tweetId, nil
 }
 
 func UploadMessageToTwitter(message *Message) error {

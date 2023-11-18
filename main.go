@@ -27,7 +27,7 @@ func post(message *Message) {
 	if message.NumImages > 0 {
 		err := DownloadTwilioImages(message)
 		if err != nil {
-			log.Printf("error downloading from Twilio; exiting")
+			log.Printf("error downloading from Twilio")
 			return
 		}
 	}
@@ -36,7 +36,7 @@ func post(message *Message) {
 	if config.MicroBlog != (MicroBlogConfig{}) {
 		err := UploadMessageToMicroBlog(message)
 		if err != nil {
-			log.Printf("error posting message to Micro.blog; exiting")
+			log.Printf("error posting message to Micro.blog")
 			return
 		}
 	} else {
@@ -47,7 +47,7 @@ func post(message *Message) {
 	if config.Twitter != (TwitterConfig{}) {
 		err := UploadMessageToTwitter(message)
 		if err != nil {
-			log.Printf("error posting message to Twitter; exiting")
+			log.Printf("error posting message to Twitter")
 			return
 		}
 	} else {
