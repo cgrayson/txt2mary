@@ -108,8 +108,9 @@ func postMessageToTwitter(message *Message) (string, error) {
 		return "", err
 	}
 
+	text := fmt.Sprintf("\"%s\"\n\n– %s", message.Text, message.From)
 	input := &types.CreateInput{
-		Text: gotwi.String(message.Text),
+		Text: gotwi.String(text),
 	}
 
 	if len(message.TwitterMediaIds) > 0 {
