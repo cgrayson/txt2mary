@@ -21,6 +21,7 @@ type Message struct {
 }
 
 var config Config
+var Version = "development"
 
 func post(message *Message) {
 	// download images, if there are any
@@ -81,13 +82,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		log.Printf("error writing twiml response")
 	}
 
-	// todo: add back in file removal
-	//err = os.Remove(filename)
-	//if err != nil {
-	//	log.Printf("Error removing file %q: %s\n", filename, err)
-	//} else {
-	//	log.Printf("removed file %q\n", filename)
-	//}
+	RemoveTwilioImages(message)
 
 	log.Printf("done processing message from %s, with %d images: %q\n", message.From, message.NumImages, message.Text)
 }
@@ -102,7 +97,7 @@ func main() {
 		}
 		log.SetOutput(file)
 	}
-	log.Printf("config loaded, listening on %s%s", config.Server, config.ServerRoute)
+	log.Printf("config loaded; version %q listening on %s%s", Version, config.Server, config.ServerRoute)
 
 	http.HandleFunc(config.ServerRoute, handler)
 	log.Fatal(http.ListenAndServe(config.Server, nil))

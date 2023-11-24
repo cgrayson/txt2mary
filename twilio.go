@@ -103,3 +103,14 @@ func DownloadTwilioImages(msg *Message) error {
 	}
 	return nil
 }
+
+func RemoveTwilioImages(msg Message) {
+	for _, filename := range msg.ImageFilenames {
+		err := os.Remove(filename)
+		if err != nil {
+			log.Printf("error removing file %q: %s\n", filename, err)
+		} else {
+			log.Printf("removed file %q\n", filename)
+		}
+	}
+}
