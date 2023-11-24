@@ -24,12 +24,13 @@ type TwitterConfig struct {
 }
 
 type Config struct {
-	Logfile       string
-	Server        string
-	ServerRoute   string
-	UsersFilename string
-	MicroBlog     MicroBlogConfig
-	Twitter       TwitterConfig
+	Logfile           string
+	Server            string
+	ServerRoute       string
+	UsersFilename     string
+	HoneybadgerAPIKey string
+	MicroBlog         MicroBlogConfig
+	Twitter           TwitterConfig
 }
 
 func LoadConfig() Config {

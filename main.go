@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/honeybadger-io/honeybadger-go"
 	"io"
 	"log"
 	"net/http"
@@ -23,13 +24,13 @@ type Message struct {
 var config Config
 var Version = "development"
 
-func post(message *Message) {
+func post(message *Message) error {
 	// download images, if there are any
 	if message.NumImages > 0 {
 		err := DownloadTwilioImages(message)
 		if err != nil {
 			log.Printf("error downloading from Twilio")
-			return
+			return err
 		}
 	}
 
@@ -38,7 +39,7 @@ func post(message *Message) {
 		err := UploadMessageToMicroBlog(message)
 		if err != nil {
 			log.Printf("error posting message to Micro.blog")
-			return
+			return err
 		}
 	} else {
 		log.Printf("no configuration for Micro.blog - skipping")
@@ -49,11 +50,12 @@ func post(message *Message) {
 		err := UploadMessageToTwitter(message)
 		if err != nil {
 			log.Printf("error posting message to Twitter")
-			return
+			return err
 		}
 	} else {
 		log.Printf("no configuration for Twitter - skipping")
 	}
+	return nil
 }
 
 func handler(w http.ResponseWriter, r *http.Request) {
@@ -74,7 +76,11 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	post(&message)
+	err = post(&message)
+	if err != nil {
+		log.Printf("notifying Honeybadger of err: %s\n", err)
+		_, _ = honeybadger.Notify(err)
+	}
 
 	// always respond to Twilio (with rose-tinted message)
 	_, err = io.WriteString(w, Twiml(fmt.Sprintf("message posted %s", message.MBPostURL)))
@@ -88,6 +94,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+	defer honeybadger.Monitor()
 	config = LoadConfig()
 
 	if config.Logfile != "stderr" && config.Logfile != "" {
@@ -98,6 +105,8 @@ func main() {
 		log.SetOutput(file)
 	}
 	log.Printf("config loaded; version %q listening on %s%s", Version, config.Server, config.ServerRoute)
+
+	honeybadger.Configure(honeybadger.Configuration{APIKey: config.HoneybadgerAPIKey})
 
 	http.HandleFunc(config.ServerRoute, handler)
 	log.Fatal(http.ListenAndServe(config.Server, nil))

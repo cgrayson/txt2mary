@@ -3,6 +3,7 @@
   "Server": ":8088",
   "ServerRoute": "/txt",
   "UsersFilename": "./fixtures/users_test.json",
+  "HoneybadgerAPIKey": "hbp_key",
   "MicroBlog": {
     "Token": "foo-bar-42",
     "Destination": "https://foo.micro.blog/",
