@@ -58,6 +58,10 @@ func post(message *Message) error {
 	return nil
 }
 
+func statusHandler(w http.ResponseWriter, r *http.Request) {
+	_, _ = io.WriteString(w, "ok")
+}
+
 func handler(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseForm()
 	if err != nil {
@@ -108,6 +112,7 @@ func main() {
 
 	honeybadger.Configure(honeybadger.Configuration{APIKey: config.HoneybadgerAPIKey})
 
+	http.HandleFunc("/status", statusHandler)
 	http.HandleFunc(config.ServerRoute, handler)
 	log.Fatal(http.ListenAndServe(config.Server, nil))
 }
