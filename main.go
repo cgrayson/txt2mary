@@ -81,7 +81,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	err = post(&message)
-	if err != nil {
+	if err != nil && config.HoneybadgerAPIKey != "" {
 		log.Printf("notifying Honeybadger of err: %s\n", err)
 		_, _ = honeybadger.Notify(err)
 	}
@@ -98,8 +98,12 @@ func handler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	defer honeybadger.Monitor()
 	config = LoadConfig()
+
+	if config.HoneybadgerAPIKey != "" {
+		honeybadger.Configure(honeybadger.Configuration{APIKey: config.HoneybadgerAPIKey})
+		defer honeybadger.Monitor() // reports unhandled panics
+	}
 
 	if config.Logfile != "stderr" && config.Logfile != "" {
 		file, err := os.OpenFile(config.Logfile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
@@ -109,8 +113,6 @@ func main() {
 		log.SetOutput(file)
 	}
 	log.Printf("config loaded; version %q listening on %s%s", Version, config.Server, config.ServerRoute)
-
-	honeybadger.Configure(honeybadger.Configuration{APIKey: config.HoneybadgerAPIKey})
 
 	http.HandleFunc("/status", statusHandler)
 	http.HandleFunc(config.ServerRoute, handler)
