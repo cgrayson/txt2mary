@@ -23,6 +23,9 @@ func TestLoadConfig(t *testing.T) {
 	if config.Twitter == (TwitterConfig{}) {
 		t.Errorf("Expected TwitterConfig to be populated")
 	}
+	if config.Twitter.TestAccount != false {
+		t.Errorf("Expected TwitterConfig to default TestAccount to false")
+	}
 }
 
 func TestLookup(t *testing.T) {

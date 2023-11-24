@@ -13,6 +13,7 @@
     "ConsumerKey": "key123",
     "ConsumerSecret": "secret456",
     "AccessToken": "token789",
-    "AccessTokenSecret": "secretabc"
+    "AccessTokenSecret": "secretabc",
+    "TestAccount": false
   }
 }

@@ -141,20 +141,25 @@ func postMessageToTwitter(message *Message) (string, error) {
 func UploadMessageToTwitter(message *Message) error {
 	var err error
 
-	for _, filename := range message.ImageFilenames {
-		mediaId, err := uploadImageToTwitter(filename)
+	// only post test messages to a test account (& real messages to real account)
+	if IsTestMessage(message) == config.Twitter.TestAccount {
+		for _, filename := range message.ImageFilenames {
+			mediaId, err := uploadImageToTwitter(filename)
+			if err != nil {
+				return err
+			}
+			log.Printf("uploaded image %q to Twitter, got mediaId %q\n", filename, mediaId)
+			message.TwitterMediaIds = append(message.TwitterMediaIds, mediaId)
+		}
+
+		message.TwitterPostURL, err = postMessageToTwitter(message)
 		if err != nil {
 			return err
 		}
-		log.Printf("uploaded image %q to Twitter, got mediaId %q\n", filename, mediaId)
-		message.TwitterMediaIds = append(message.TwitterMediaIds, mediaId)
-	}
 
-	message.TwitterPostURL, err = postMessageToTwitter(message)
-	if err != nil {
-		return err
+		log.Printf("posted message to Twitter\n")
+	} else {
+		log.Printf("no Twitter account configured for this message type\n")
 	}
-
-	log.Printf("posted message to Twitter\n")
 	return nil
 }

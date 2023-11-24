@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 )
 
 // TestMode defaults to false but is set in the tests to load test config
@@ -21,6 +22,7 @@ type TwitterConfig struct {
 	ConsumerSecret    string
 	AccessToken       string
 	AccessTokenSecret string
+	TestAccount       bool
 }
 
 type Config struct {
@@ -31,6 +33,10 @@ type Config struct {
 	HoneybadgerAPIKey string
 	MicroBlog         MicroBlogConfig
 	Twitter           TwitterConfig
+}
+
+func IsTestMessage(message *Message) bool {
+	return strings.HasPrefix(message.Text, "TEST: ")
 }
 
 func LoadConfig() Config {

@@ -15,9 +15,11 @@ import (
 	"strings"
 )
 
+// destinationBlog takes a Message and determines which Micro.blog destination
+// URL to post it too. Test messages go to the test blog, if configured.
 func destinationBlog(message *Message) (destination string) {
 	destination = config.MicroBlog.Destination
-	if strings.HasPrefix(message.Text, "TEST: ") {
+	if IsTestMessage(message) {
 		destination = config.MicroBlog.TestDestination
 	}
 	return
@@ -124,19 +126,26 @@ func postMessage(message *Message, mpDestination string) (string, error) {
 func UploadMessageToMicroBlog(message *Message) error {
 	var err error
 
-	for _, filename := range message.ImageFilenames {
-		mbUrl, err := uploadFile(filename, destinationBlog(message))
+	destination := destinationBlog(message)
+
+	// could be empty if for a test message with no TestDestination configured
+	if destination != "" {
+		for _, filename := range message.ImageFilenames {
+			mbUrl, err := uploadFile(filename, destination)
+			if err != nil {
+				return err
+			}
+			message.MBImageURLs = append(message.MBImageURLs, mbUrl)
+			log.Printf("uploaded image %q to Micro.blog\n", filename)
+		}
+
+		message.MBPostURL, err = postMessage(message, destination)
 		if err != nil {
 			return err
 		}
-		message.MBImageURLs = append(message.MBImageURLs, mbUrl)
-		log.Printf("uploaded image %q to Micro.blog\n", filename)
+		log.Printf("posted message to Micro.blog\n")
+	} else {
+		log.Printf("no destination blog configured for this message type\n")
 	}
-
-	message.MBPostURL, err = postMessage(message, destinationBlog(message))
-	if err != nil {
-		return err
-	}
-	log.Printf("posted message to Micro.blog\n")
 	return nil
 }
