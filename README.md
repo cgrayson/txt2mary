@@ -124,3 +124,7 @@ WantedBy=multi-user.target
 ```
 
 2. start the service: `systemctl start txt2mary.service` (and stop or restart it by replacing `start` with `stop` or `restart`).
+
+## license
+
+This software is licensed under the GNU General Public License v3.0. See [`COPYING`](COPYING).
