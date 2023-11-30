@@ -7,7 +7,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"reflect"
 	"strconv"
 	"strings"
 )
@@ -26,13 +25,6 @@ type TwilioPayload struct {
 	MediaUrl7 string
 	MediaUrl8 string
 	MediaUrl9 string
-}
-
-func getMediaUrl(payload *TwilioPayload, mediaUrlNumber int) string {
-	fieldName := fmt.Sprintf("MediaUrl%d", mediaUrlNumber)
-	r := reflect.ValueOf(payload)
-	f := reflect.Indirect(r).FieldByName(fieldName)
-	return f.String()
 }
 
 // ParseTwilioWebhook parses webhook post from Twilio,
