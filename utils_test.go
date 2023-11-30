@@ -35,8 +35,8 @@ func TestLookup(t *testing.T) {
 		phoneNum     string
 		expectedName string
 	}{
-		{phoneNum: "+15125551212", expectedName: "Dorothea"},
-		{phoneNum: "+15125551213", expectedName: "Celia"},
+		{phoneNum: "+15125551212", expectedName: "Gon"},
+		{phoneNum: "+15125551213", expectedName: "Killua"},
 		{phoneNum: "+15125551214", expectedName: ""},
 	}
 
@@ -56,8 +56,8 @@ func TestFormat(t *testing.T) {
 		phoneNum    string
 		expectedMsg string
 	}{
-		{msg: "Thinking of you!", phoneNum: "+15125551212", expectedMsg: "> Thinking of you!\n\n&ndash; Dorothea"},
-		{msg: "", phoneNum: "+15125551213", expectedMsg: "> &nbsp;\n\n&ndash; Celia"},
+		{msg: "Thinking of you!", phoneNum: "+15125551212", expectedMsg: "> Thinking of you!\n\n&ndash; Gon"},
+		{msg: "", phoneNum: "+15125551213", expectedMsg: "> &nbsp;\n\n&ndash; Killua"},
 		{msg: "Hello", phoneNum: "+15125551214", expectedMsg: "> Hello\n\n&ndash; (unknown sender)"},
 	}
 

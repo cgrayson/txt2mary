@@ -68,8 +68,8 @@ func TestParseTwilioWebhook(t *testing.T) {
 	data.Add("MediaUrl0", "https://api.twilio.com/2010-04-01/Accounts/AC123/Messages/MM0123/Media/ME456")
 	message := ParseTwilioWebhook(data)
 
-	if message.From != "Dorothea" {
-		t.Errorf("expected Message.From of 'Dorothea', got %q", message.From)
+	if message.From != "Gon" {
+		t.Errorf("expected Message.From of 'Gon', got %q", message.From)
 	}
 	if message.Text != "Here is another pic" {
 		t.Errorf("expected Message.Text of 'Here is another pic', got %q", message.Text)
